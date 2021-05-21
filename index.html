@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Estudos com OpenCV.js</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/estilo.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script src="https://cdn.jsdelivr.net/gh/nicolaspanel/numjs@0.15.1/dist/numjs.min.js"></script>
+</head>
+<body>
+    <div class="row mt-4">
+        <div class="col-lg-4">
+            <label for="img_input">Carregar foto:</label>
+            <input id="img_input" type="file" class="img_reducao">
+            <img class="pt-3 p-lg-3 img_reducao" id="cont_imagem">
+        </div>
+        <div class="col-lg-4">
+            <p id="loader">Carregando OpenCV.js ...</p>
+            <canvas id="img_canvas" class="mx-auto d-block img_reducao"></canvas>
+        </div>
+        <div class="col-lg-4">
+            <p class="text-center">FFT da imagem</p><br>
+            <button id="calc_fft" type="button">Calcula FFT</button>
+            <p id="resultado"></p>
+            <canvas id="fft_canvas" class="mx-auto d-block img_reducao"></canvas>
+        </div>
+    </div>
+
+    <script src="saida.js"></script>
+<!--    <script async onload="openCVReady();" type="text/javascript"-->
+<!--            src="js/opencv.js"></script>-->
+    <script src="js/bootstrap.min.js"></script>
+<!--    <script src="js/jquery.js"></script>-->
+<!--    <script type="module" src="app.js"></script>-->
+
+</body>
+</html>
