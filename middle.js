@@ -2,9 +2,6 @@ const cv = require('./js/opencv');
 require('jquery');
 const funcoes = require('./js/constants');
 const $ = require('jquery-browserify');
-const fft = require('fft-js').fft;
-const fftUtil = require('fft-js').util;
-const nd = require('nd4js');
 
 $(document).ready(function (){
     let histograma;
@@ -57,9 +54,13 @@ $(document).ready(function (){
     });
 
     $("#calc_fft").click(function (e){
-        let resultado = funcoes.MakeFFT(dst);
-        funcoes.CrossQuads(resultado);
-        cv.imshow('fft_canvas', resultado);
+        let im = funcoes.GaussModif(
+            0.45,
+            2.0,
+            4.0,
+            2503, dst);
+
+
     });
 
 ////////////////////////////////////////

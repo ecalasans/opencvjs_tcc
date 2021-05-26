@@ -3,62 +3,97 @@ const cv = require('./opencv');
 
 // Função para compor a meshgrid
 function MeshgridJS(xdim, ydim){
-    let x = new Array(xdim);
-    let y = new Array(xdim);
-    let x_dim = xdim;
-    let y_dim = ydim;
+    let u = new Array();
+    let v = new Array();
+    //let x_dim = xdim;
+    //let y_dim = ydim;
 
     for (let i = 0; i < xdim; i++){
-        let temp1 = new Array(ydim);
-
         for (let j = 0; j < ydim; j++){
-            temp1[j] = i;
+            u.push(i);
         }
-
-        x[i] = temp1;
     }
 
     for (let i = 0; i < xdim; i++){
-        let temp2 = new Array(ydim);
-
         for (let j = 0; j < ydim; j++){
-            temp2[j] = j;
+            v.push(j);
         }
-
-        y[i] = temp2;
     }
     return {
-        'x': x,
-        'y': y,
-        'u': x_dim,
-        'v': y_dim
+        'u': u,
+        'v': v
     };
 }
 
 //Função Gaussiana Modificaca
 function GaussModif(gamma_l = 0.0, gamma_h = 0.0, c = 0.0, D0 = 0.0, imagem) {
-    //Dimensões da imagem
-    let im_h = imagem.rows;
-    let im_w = imagem.cols;
+    //Calcula o tamanho ótimo para a FFT
+    let im_h = cv.getOptimalDFTSize(imagem.rows);
+    let im_w = cv.getOptimalDFTSize(imagem.cols);
 
     //Coordenadas do centro
-    let u_c = im_h/2;
-    let v_c = im_w/2;
+    let u_c = new cv.Mat(im_h, im_w, cv.CV_32F, new cv.Scalar(im_h/2));
+    let v_c = new cv.Mat(im_h, im_w, cv.CV_32F, new cv.Scalar(im_w/2));
+
+    // Inclinacao da curva
+    let m_c = new cv.Mat(im_h, im_w, cv.CV_32F, new cv.Scalar(c));
+
+    // Frequencia de corte
+    let m_d0 = new cv.Mat(im_h, im_w, cv.CV_32F, new cv.Scalar(D0));
 
     //Matriz de Coordenadas
     let arr = MeshgridJS(im_h,im_w);
-    let a = arr['x'];
-    let b = arr['y'];
+    let a = arr['u'];
+    a = cv.matFromArray(im_h, im_w, cv.CV_32F, a);
+    let b = arr['v'];
+    b = cv.matFromArray(im_h, im_w, cv.CV_32F, b);
+
+    // Matriz do filtro gaussiano modificado
+    let H_uv = new cv.Mat.zeros(im_h, im_w, cv.CV_32F);
+
 
     //Etapas de cálculo de H(u,v)
-    let d_uv_2_d0 = nd.zip_elems([a,b], (u, v, i, j) => (((u-u_c)**2 + (v-v_c)**2)**2) / D0);
-    let um_menos = nd.zip_elems([d_uv_2_d0], (hij,i,j) => (Math.exp((-1) * c * hij)));
-    let expon = nd.zip_elems([um_menos], (mij, i, j) => 1 - mij);
-    let multi_delta_gamma = nd.zip_elems([expon], (mij, i, j) => (gamma_h - gamma_l) * mij);
+    // let d_uv_2_d0 = nd.zip_elems([a, b], (u, v, i, j) => (((u-u_c)**2 + (v-v_c)**2)**2) / D0);
+    // 1.  Cálculo de D(u,v)/D0
+    let u_uc = new cv.Mat();
+    let v_vc = new cv.Mat();
+    // (u - u_c)^2
+    cv.subtract(a, u_c, u_uc);
+    cv.multiply(u_uc, u_uc, u_uc)
+    a.delete();
 
-    let H_uv = nd.zip_elems([multi_delta_gamma], (mij, i, j) => gamma_l + mij)
+    // (v - v_c)^2
+    cv.subtract(b, v_c, v_vc);
+    cv.multiply(v_vc, v_vc, v_vc)
+    b.delete();
 
-    console.log(H_uv);
+    // [(u_uc)^2 + (v_vc)^2]^2
+    let soma_uuc_vvc_2 = new cv.Mat();
+    cv.add(u_uc, v_vc, soma_uuc_vvc_2);
+    cv.multiply(soma_uuc_vvc_2, soma_uuc_vvc_2, soma_uuc_vvc_2);
+    u_uc.delete();
+    v_vc.delete();
+
+    // Divisão por D0
+    let d_d0 = new cv.Mat();
+    cv.divide(soma_uuc_vvc_2, m_d0, d_d0);
+    soma_uuc_vvc_2.delete();
+    m_d0.delete();
+
+    // a.delete(); b.delete();
+    // let um_menos = nd.zip_elems([d_uv_2_d0], (hij,i,j) => (Math.exp((-1) * c * hij)));
+    //
+    // let expon = nd.zip_elems([um_menos], (mij, i, j) => 1 - mij);
+    //
+    // let multi_delta_gamma = nd.zip_elems([expon], (mij, i, j) => (gamma_h - gamma_l) * mij);
+    //
+    // let H_uv = nd.zip_elems([multi_delta_gamma], (mij, i, j) => gamma_l + mij)
+
+    let m_huv = new cv.Mat.zeros(im_h, im_w, cv.CV_8U);
+
+    console.log(d_d0.data32F);
+
+    return d_d0;
 }
 
 // Função para zero padding
@@ -169,6 +204,9 @@ function MakeFFT(imagem) {
     cv.log(mag, mag);
     mag.convertTo(mag, cv.CV_8U);
     cv.normalize(mag, mag, 0, 255, cv.NORM_MINMAX);
+
+    // Troca os quadrantes para visualização da DFT
+    CrossQuads(mag);
 
     return mag;
 }
