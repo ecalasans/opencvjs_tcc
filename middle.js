@@ -61,7 +61,8 @@ $(document).ready(function (){
             4.0,
             2503, dst);
         funcoes.CrossQuads(im);
-        cv.imshow('fft_canvas', im);
+        let resultado = funcoes.HomoFiltering(im, dst);
+        cv.imshow('fft_canvas', resultado);
 
     });
 

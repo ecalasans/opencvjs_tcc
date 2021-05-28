@@ -251,6 +251,13 @@ function MakeFFT(imagem) {
 function HomoFiltering(huv, imagem){
     // Faz a troca de quadrantes de Huv pois a função GaussModif retorna a imagem
     // com pixels centralizados
+    let h_temp = huv;
+    CrossQuads(h_temp);
+
+    // 1 + imagem(para garantir a realização da operação de logaritmo
+    let um = new cv.Mat.ones(h_temp.rows, h_temp.cols);
+
+    return um;
 }
 
 module.exports = {
@@ -261,5 +268,5 @@ module.exports = {
     PrepareToDFT,
     CrossQuads,
     MakeFFT,
-    HomoFiltering
+    HomoFiltering,
 }
