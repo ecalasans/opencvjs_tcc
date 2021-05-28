@@ -54,12 +54,14 @@ $(document).ready(function (){
     });
 
     $("#calc_fft").click(function (e){
+        let fft = funcoes.MakeFFT(dst);
         let im = funcoes.GaussModif(
             0.45,
             2.0,
             4.0,
             2503, dst);
 
+        cv.imshow('fft_canvas', im);
 
     });
 

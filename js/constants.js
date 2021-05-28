@@ -109,15 +109,28 @@ function GaussModif(gamma_l = 0.0, gamma_h = 0.0, c = 0.0, D0 = 0.0, imagem) {
     cv.subtract(um, exponencial, um_menos_exp);
     exponencial.delete();
 
+    // 4.  Cálculo de H(u,v)
     // let multi_delta_gamma = nd.zip_elems([expon], (mij, i, j) => (gamma_h - gamma_l) * mij);
-    //
     // let H_uv = nd.zip_elems([multi_delta_gamma], (mij, i, j) => gamma_l + mij)
+    let m_gamma_l = new cv.Mat(im_h, im_w, cv.CV_32F, new cv.Scalar(gamma_l));
+    let m_gamma_h = new cv.Mat(im_h, im_w, cv.CV_32F, new cv.Scalar(gamma_h));
+    let gh_gl = new cv.Mat();
 
-    let m_huv = new cv.Mat.zeros(im_h, im_w, cv.CV_8U);
+    // gamma_h - gamma_l
+    cv.subtract(m_gamma_h, m_gamma_l, gh_gl);
 
-    console.log(um_menos_exp.data32F);
+    // m_uv = (um_menos_exp * gh_gl) + gamma_l
+    let m_huv = new cv.Mat();
+    cv.multiply(gh_gl, um_menos_exp, gh_gl);
+    cv.add(gh_gl, m_gamma_l, m_huv);
+    m_gamma_l.delete();
+    m_gamma_h.delete();
+    gh_gl.delete();
+    um_menos_exp.delete();
 
-    return d_d0;
+    console.log(m_huv);
+
+    return m_huv;
 }
 
 // Função para zero padding
