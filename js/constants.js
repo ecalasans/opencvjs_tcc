@@ -1,4 +1,3 @@
-const nd = require('nd4js');
 const cv = require('./opencv');
 
 // Função para compor a meshgrid
