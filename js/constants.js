@@ -247,6 +247,12 @@ function MakeFFT(imagem) {
     return mag;
 }
 
+// Função que realiza a filtragem homomórfica através de fft * H_uv
+function HomoFiltering(huv, imagem){
+    // Faz a troca de quadrantes de Huv pois a função GaussModif retorna a imagem
+    // com pixels centralizados
+}
+
 module.exports = {
     MeshgridJS,
     GaussModif,
@@ -254,5 +260,6 @@ module.exports = {
     ZeroUnpadding,
     PrepareToDFT,
     CrossQuads,
-    MakeFFT
+    MakeFFT,
+    HomoFiltering
 }

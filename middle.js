@@ -60,7 +60,7 @@ $(document).ready(function (){
             2.0,
             4.0,
             2503, dst);
-
+        funcoes.CrossQuads(im);
         cv.imshow('fft_canvas', im);
 
     });
