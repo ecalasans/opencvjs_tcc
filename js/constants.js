@@ -74,24 +74,48 @@ function GaussModif(gamma_l = 0.0, gamma_h = 0.0, c = 0.0, D0 = 0.0, imagem) {
     u_uc.delete();
     v_vc.delete();
 
-    // Divisão por D0
+    // Divisão por D0^2
     let d_d0 = new cv.Mat();
+    cv.multiply(m_d0, m_d0, m_d0);
     cv.divide(soma_uuc_vvc_2, m_d0, d_d0);
     soma_uuc_vvc_2.delete();
     m_d0.delete();
 
-    // a.delete(); b.delete();
+    // 2.  Cálculo de -c * d_d0
     // let um_menos = nd.zip_elems([d_uv_2_d0], (hij,i,j) => (Math.exp((-1) * c * hij)));
-    //
+    let menos_um = new cv.Mat(im_h, im_w, cv.CV_32F, new cv.Scalar(-1));
+    let menos_c = new cv.Mat();
+
+    // -c
+    cv.multiply(menos_um, m_c, menos_c);
+
+    cv.multiply(d_d0, menos_c, menos_c);
+    menos_um.delete();
+    d_d0.delete();
+
+    // 3.  Cálculo de 1 - exp(menos_c)
     // let expon = nd.zip_elems([um_menos], (mij, i, j) => 1 - mij);
-    //
+
+    // Matriz de "uns"
+    let um = new cv.Mat.ones(im_h, im_w, cv.CV_32F);
+
+    // Exponencial
+    let exponencial = new cv.Mat();
+    cv.exp(menos_c, exponencial);
+    menos_c.delete()
+
+    // 1 - exponencial
+    let um_menos_exp = new cv.Mat();
+    cv.subtract(um, exponencial, um_menos_exp);
+    exponencial.delete();
+
     // let multi_delta_gamma = nd.zip_elems([expon], (mij, i, j) => (gamma_h - gamma_l) * mij);
     //
     // let H_uv = nd.zip_elems([multi_delta_gamma], (mij, i, j) => gamma_l + mij)
 
     let m_huv = new cv.Mat.zeros(im_h, im_w, cv.CV_8U);
 
-    console.log(d_d0.data32F);
+    console.log(um_menos_exp.data32F);
 
     return d_d0;
 }
